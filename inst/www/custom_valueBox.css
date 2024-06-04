@@ -1,5 +1,4 @@
 .small-box .icon-large {
-  position: absolute;
   top: 2px;
   bottom: 2px;
   right: 20px;
@@ -28,4 +27,19 @@
 .small-box p {
   font-size: 25px;
   color: black;
+}
+
+/* Custom size of text and icon of menuItem */
+.sidebar-menu li a {
+     font-size: 18px;
+}
+
+/* Custom size of main text (top left corner) */
+.main-header .logo {
+     font-size: 20px;
+}
+
+/* Add spacing between icon and text in menuItem */
+.sidebar-menu > li > a > span {
+  margin-left: 10px;
 }
