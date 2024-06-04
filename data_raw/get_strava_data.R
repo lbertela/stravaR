@@ -42,7 +42,7 @@ my_acts <- rStrava::compile_activities(activities) %>%
      # select, rename & reorder columns
      select(
           # activity & athlete info
-          id, name, sport_type, start_date_time_local, start_date_local,
+          upload_id, name, sport_type, start_date_time_local, start_date_local,
           year, month, day, hour, minute, second,
           # activity stats
           distance, total_elevation_gain, elev_high, 
