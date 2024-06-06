@@ -16,10 +16,6 @@ my_token <- httr::config(token = rStrava::strava_oauth(
 activities <- rStrava::get_activity_list(stoken = my_token)
 my_acts <- rStrava::compile_activities(activities) %>% 
      
-     # convert time from sec to hr/min/sec
-     mutate(moving_time = lubridate::seconds_to_period(moving_time),
-            elapsed_time = lubridate::seconds_to_period(elapsed_time)) %>% 
-     
      # convert start_date_local to Date object
      mutate(start_date_time_local = as_datetime(x = start_date_local),
             start_date_local = as_date(x = start_date_local)) %>% 
