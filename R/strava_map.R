@@ -1,8 +1,8 @@
 
-strava_map <- function() {
+strava_map <- function(long, lat, zoom) {
      
      map <- leaflet() %>%
-          setView(lng = 7.3705, lat = 46.7341, zoom = 8) %>% 
+          setView(lng = long, lat = lat, zoom = zoom) %>% 
           addProviderTiles(
                provider = "Jawg.Streets",
                options = providerTileOptions(accessToken = Sys.getenv("JAWG_TOKEN"))
