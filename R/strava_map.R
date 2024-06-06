@@ -1,4 +1,13 @@
-
+#' Produce leaflet map with Strava data
+#'
+#' @param long Initial longitude position
+#' @param lat Initial latitude position
+#' @param zoom Initial zoom level
+#'
+#' @return a leaflet map
+#' @export
+#'
+#' @examples
 strava_map <- function(long, lat, zoom) {
      
      map <- leaflet() %>%
