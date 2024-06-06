@@ -3,6 +3,7 @@ library(shinydashboard)
 library(dplyr)
 library(leaflet)
 library(leaflet.providers)
+library(reactable)
 devtools::load_all()
 
 ui <- dashboardPage(
@@ -32,7 +33,10 @@ ui <- dashboardPage(
                     tabName = 'stats'
                ),
                tabItem(
-                    tabName = 'data'
+                    align = "center",
+                    tabName = 'data',
+                    br(),
+                    reactableOutput(outputId = "strava_table")
                )
           )
      )
