@@ -14,7 +14,16 @@ strava_map <- function(long, lat, zoom) {
           setView(lng = long, lat = lat, zoom = zoom) %>% 
           addProviderTiles(
                provider = "Jawg.Streets",
+               group = "Streets",
                options = providerTileOptions(accessToken = Sys.getenv("JAWG_TOKEN"))
+          ) %>% 
+          addProviderTiles(
+               "Esri.WorldImagery",
+               group = "World Imagery"
+          ) %>% 
+          addLayersControl(
+               baseGroups = c("Streets", "World Imagery"),
+               position = "topleft"
           )
      
      for (i in na.omit(unique(my_acts$upload_id))) {
