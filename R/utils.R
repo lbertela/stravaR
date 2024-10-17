@@ -70,3 +70,46 @@ load_activities <- function(token) {
      usethis::use_data(my_acts, overwrite = TRUE)
      
 }
+
+get_distance <- function(sport = NULL, years = NULL) {
+     dist <- my_acts %>% 
+          filter(if (!is.null(sport)) sport_type %in% sport else TRUE) %>% 
+          filter(if (!is.null(years)) year %in% years else TRUE) %>% 
+          pull(distance)
+     
+     dist <- format(round(sum(dist), digits = 0), big.mark = "'")
+          
+     return(dist)
+}
+
+get_elevation <- function(sport = NULL, years = NULL) {
+     elev <- my_acts %>% 
+          filter(if (!is.null(sport)) sport_type %in% sport else TRUE) %>% 
+          filter(if (!is.null(years)) year %in% years else TRUE) %>% 
+          pull(total_elevation_gain)
+     
+     elev <- format(round(sum(elev), digits = 0), big.mark = "'")
+     
+     return(elev)
+}
+
+get_wdays_freq <- function(years = NULL) {
+     
+     if (length(years) > 1) {
+          sort_years <- sort(unique(years))
+          if (all(diff(sort_years) != 1)) stop("years must be consecutive")
+     }
+     
+     date <- my_acts %>% 
+          filter(if (!is.null(years)) year %in% years else TRUE) %>%
+          pull(start_date_local)
+     wdays <- lubridate::wday(as.Date(date), label = TRUE, abbr = FALSE, 
+                  locale = "en_US.UTF-8", week_start = 1)
+     
+     wdays <- as.data.frame(table(wdays)) %>% 
+          mutate(share = Freq / sum(Freq))
+     names(wdays) <- c("weekday", "freq", "share")
+     
+     return(wdays)
+     
+}
