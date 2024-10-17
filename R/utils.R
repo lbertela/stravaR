@@ -1,25 +1,16 @@
-library(dplyr)
-library(lubridate)
-
 update_activities <- function() {
      
-     id <- get_credential()
-     my_token <- get_token(id)
+     my_token <- get_token()
      load_activities(token = my_token)
      
 }
 
-get_credential <- function() {
+get_token <- function() {
+     
      app_name <- Sys.getenv("APP_NAME")
      app_client_id <- Sys.getenv("APP_CLIENT_ID")
      app_secret <- Sys.getenv("APP_SECRET")
      
-     credential <- c(app_name, app_client_id, app_secret)
-     
-     return(credential)
-}
-
-get_token <- function(credential) {
      token <- httr::config(token = rStrava::strava_oauth(
           app_name, app_client_id, app_secret,
           app_scope = "activity:read_all"))
