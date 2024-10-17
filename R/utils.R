@@ -49,7 +49,8 @@ load_activities <- function(token) {
                sport_type == "MountainBikeRide" ~ "vtt",
                sport_type == "Ride" ~ "road",
                sport_type == "GravelRide" ~ "gravel",
-               sport_type == "Run" ~ "run")) %>% 
+               sport_type == "Run" ~ "run",
+               sport_type == "Hike" ~ "hike")) %>% 
           
           # select, rename & reorder columns
           select(
