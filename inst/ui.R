@@ -4,6 +4,8 @@ library(dplyr)
 library(leaflet)
 library(leaflet.providers)
 library(reactable)
+library(lattice)
+library(grid)
 devtools::load_all()
 
 ui <- dashboardPage(
@@ -21,16 +23,18 @@ ui <- dashboardPage(
                tags$link(rel = "stylesheet", type = "text/css", href = "custom_valueBox.css")
           ),
           valueBox(nrow(my_acts), "Activities", icon = icon("strava"), color = "blue"),
-          valueBox(format(round(sum(my_acts$distance), digits = 0), big.mark = "'"), "Kms", icon = icon("globe"), color = "green"),
-          valueBox(format(round(sum(my_acts$total_elevation_gain), digits = 0), big.mark = "'"), "Meters of elevation", icon = icon("arrow-trend-up"), color = "purple"),
+          valueBox(get_distance(), "Kms", icon = icon("globe"), color = "green"),
+          valueBox(get_elevation(), "Meters of elevation", icon = icon("arrow-trend-up"), color = "purple"),
           tabItems(
                tabItem(
                     align = "center",
                     tabName = "heatmap",
-                    leafletOutput("mymap", width="60%", height="600px")
+                    leafletOutput("mymap", width="70%", height="700px")
                ),
                tabItem(
-                    tabName = 'stats'
+                    align = "center",
+                    tabName = "stats",
+                    plotOutput("calendar")
                ),
                tabItem(
                     align = "center",
