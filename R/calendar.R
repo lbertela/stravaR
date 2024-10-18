@@ -20,7 +20,7 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
      
      # Merge values to days
      caldat <- left_join(all_days, data, by = "dates") %>%
-          mutate(dotw = wday(dates, week_start = 1) - 1,     # Monday as start of the week
+          mutate(dotw = lubridate::wday(dates, week_start = 1) - 1,     # Monday as start of the week
                  woty = as.numeric(format(dates, "%W")) + 1, # Week of the year
                  yr = as.factor(format(dates, "%Y")),
                  month = as.numeric(format(dates, "%m"))) %>%
@@ -57,7 +57,7 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
                                 labels = labels, include.lowest = TRUE))
      
      # Create ggplot
-     ggplot(caldat, aes(x = woty, y = dotw, fill = category)) +
+     plot <- ggplot(caldat, aes(x = woty, y = dotw, fill = category)) +
           geom_tile(color = "lightgrey", size = 0.25) +
           scale_y_reverse(breaks = 0:6,
                           labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")) +
@@ -66,48 +66,50 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
                              expand = c(0, 0)) +
           scale_fill_manual(values = colors,
                             labels = labels, 
-                            name = "Distance",
                             na.value = "white",
                             na.translate = FALSE) +
           geom_segment(data = month_boundaries, na.rm = TRUE, # vertical month start
                        aes(x = x_m_start, xend = x_m_start,
                            y = 6.5, yend = y_m_start_top),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = month_boundaries, na.rm = TRUE, # vertical month end
                        aes(x = x_m_end, xend = x_m_end,
                            y = -0.5, yend = y_m_end_down),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = month_boundaries, na.rm = TRUE, # horizontal between months
                        aes(x = x_m_start, xend = x_m_start + 1,
                            y = y_m_start_top, yend = y_m_start_top),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = fill_borders, na.rm = TRUE, # vertical left and right borders
                        aes(x = x_v_border, xend = x_v_border,
                            y = y_v_top, yend = y_v_down),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = fill_borders, na.rm = TRUE, # horizontal long top border
                        aes(x = 1.5, xend = x_m_end,
                            y = -0.5, yend = -0.5),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = fill_borders, na.rm = TRUE, # horizontal long bottom border
                        aes(x = x_h_down_left, xend = x_h_down_right,
                            y = 6.5, yend = 6.5),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           geom_segment(data = fill_borders, na.rm = TRUE, # horizontal small right border
                        aes(x = x_right_left, xend = x_right_left + 1,
                            y = y_m_end_down, yend = y_m_end_down),
-                       color = "black", size = 0.6, inherit.aes = FALSE) +
+                       color = "black", linewidth = 0.6, inherit.aes = FALSE) +
           
           facet_wrap(~yr, ncol = 1, strip.position = "top") +
           coord_fixed(ratio = 1, clip = "off") + 
           theme_minimal(base_size = 10) +
+          labs(fill=NULL) +
           theme(axis.title = element_blank(),
                 axis.text.x = element_text(size = 10, vjust = 2, face = "bold"),
-                axis.text.y = element_text(size = 8),
-                strip.text = element_text(size = 10, face = "bold"),
+                axis.text.y = element_text(size = 9, margin = margin(r = 5)),
+                strip.text = element_text(size = 15, face = "bold"),
                 panel.grid = element_blank(),
                 legend.position = "right",
-                legend.title = element_text(size = 10),
-                legend.text = element_text(size = 9),
-                legend.key.size = unit(0.5, 'cm'))
+                legend.text = element_text(size = 15),
+                legend.key.size = unit(0.5, 'cm'),
+                legend.key.spacing.y = unit(0.5, 'cm'))
+     
+     return(plot)
 }
