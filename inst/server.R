@@ -4,7 +4,7 @@ server <- function(input, output, session) {
           strava_map(long = 7.3705, lat = 46.7341, zoom = 8)
      })
      
-     output$calendar <- renderPlot({
+     output$calendar <- renderGirafe({
           calendar_heat(dates = my_acts %>% 
                              select(start_date_local, distance) %>% 
                              group_by(start_date_local) %>% 
@@ -20,7 +20,7 @@ server <- function(input, output, session) {
                         breaks = c(0, 30, 60, 100),
                         labels = c("0-30", "30-60", "60-100", "100+"),
                         colors = c("#0571B0", "#92C5DE", "#F4A582", "#CA0020"))
-     }, height = 1000, res = 100, bg = "transparent")
+     })
      
      t_theme <- reactablefmtr::default()
      t_theme[["tableStyle"]]$fontSize <- 18
