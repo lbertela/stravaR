@@ -54,11 +54,14 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
      
      caldat <- caldat %>%
           mutate(category = cut(value, breaks = c(0, 30, 60, 100, Inf),
-                                labels = labels, include.lowest = TRUE))
+                                labels = labels, include.lowest = TRUE),
+                 int = case_when(!is.na(value) ~ paste0(dates, " : ", format(round(value, digits = 1)), "kms"),
+                                 TRUE ~ ""))
      
      # Create ggplot
      plot <- ggplot(caldat, aes(x = woty, y = dotw, fill = category)) +
           geom_tile(color = "lightgrey", size = 0.25) +
+          geom_tile_interactive(aes(tooltip = int, data_id = int)) +
           scale_y_reverse(breaks = 0:6,
                           labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")) +
           scale_x_continuous(breaks = seq(2.9, 52, by = 4.42),
@@ -111,5 +114,13 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
                 legend.key.size = unit(0.5, 'cm'),
                 legend.key.spacing.y = unit(0.5, 'cm'))
      
-     return(plot)
+     tooltip_css <- "background-color:darkgrey;color:black;padding:5px;border-radius:3px;"
+     hover_css <- "fill-opacity:0;stroke:green;stroke-width:1.5pt;"
+     
+     girafe(ggobj = plot, width_svg = 15, height_svg = 12, bg = "transparent",
+            options = list(opts_toolbar(hidden = c("lasso_select", "lasso_deselect")),
+                           opts_sizing(rescale = FALSE),
+                           opts_tooltip(css = tooltip_css, opacity = 1),
+                           opts_hover(css = hover_css)))
+     
 }
