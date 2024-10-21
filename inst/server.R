@@ -22,6 +22,8 @@ server <- function(input, output, session) {
                         colors = c("#0571B0", "#92C5DE", "#F4A582", "#CA0020"))
      })
      
+     output$plot_test <- renderPlotly({distance_per_year(data = my_acts)})
+
      t_theme <- reactablefmtr::default()
      t_theme[["tableStyle"]]$fontSize <- 18
      t_theme[["headerStyle"]]$fontSize <- 20
