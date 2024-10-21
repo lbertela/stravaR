@@ -115,12 +115,13 @@ calendar_heat <- function(dates, values, min_year = NULL, max_year = NULL,
                 legend.key.spacing.y = unit(0.5, 'cm'))
      
      tooltip_css <- "background-color:darkgrey;color:black;padding:5px;border-radius:3px;"
-     hover_css <- "fill-opacity:0;stroke:green;stroke-width:1.5pt;"
+     hover_css <- "fill-opacity:0;stroke:black;stroke-width:1.5pt;"
      
      girafe(ggobj = plot, width_svg = 15, height_svg = 12, bg = "transparent",
             options = list(opts_toolbar(hidden = c("lasso_select", "lasso_deselect")),
                            opts_sizing(rescale = FALSE),
                            opts_tooltip(css = tooltip_css, opacity = 1),
-                           opts_hover(css = hover_css)))
+                           opts_hover(css = hover_css),
+                           opts_selection(type = "none")))
      
 }
