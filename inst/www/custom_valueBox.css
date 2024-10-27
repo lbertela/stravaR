@@ -6,11 +6,11 @@
   color: #fc4c02
 }
 
-/* Use the following to modify only one logo
-.fab.fa-strava {
-       color: #fc4c02
+/* Custom the scrolling option */
+.content-wrapper {
+  overflow-y: scroll; 
+  overflow-x: hidden;
 }
-*/
 
 /* Rounding corner */
 .small-box {
@@ -21,6 +21,11 @@
 .small-box h3 {
   font-size: 50px;
   color: black;
+}
+
+/* Custom size of main text (top left corner) */
+.main-header .logo {
+     font-size: 20px;
 }
 
 /* Custom Subtitle text */
@@ -34,12 +39,30 @@
      font-size: 18px;
 }
 
-/* Custom size of main text (top left corner) */
-.main-header .logo {
-     font-size: 20px;
-}
-
 /* Add spacing between icon and text in menuItem */
 .sidebar-menu > li > a > span {
   margin-left: 10px;
+}
+
+/* Color of the box's header (with status primary) */
+.box.box-solid.box-primary>.box-header {
+     color: black;
+  background:#C8C8C8;
+}
+
+/* Color of the box's borders (with status primary) */
+.box.box-solid.box-primary{
+  border-bottom-color: black;
+  border-left-color: black;
+  border-right-color: black;
+  border-top-color: black;
+}
+
+/* Color of the box's collapse/expand button */
+.fas.fa-minus {
+       color: black
+}
+
+.fas.fa-plus {
+       color: black
 }
