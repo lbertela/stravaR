@@ -1,38 +1,38 @@
-distance_per_year <- function(data, min_year = NULL, max_year = NULL) {
-
+distance_per_month <- function(data, min_year = NULL, max_year = NULL) {
+     
      if (is.null(min_year)) min_year <- min(data$year)
      if (is.null(max_year)) max_year <- max(data$year)
      
      max_month <- max(data %>% filter(year == max_year) %>% pull(month))
-     colors <- paletteer::paletteer_d("ggthemes::Classic_Color_Blind")
+     years <- seq(min_year, max_year)
+     colors <- paletteer::paletteer_d("ggthemes::Classic_Color_Blind", n = length(years))
      
-     data <- data %>%
-          filter(year >= min_year & year <= max_year) %>% 
+     data <- my_acts %>%
+          filter(year %in% years) %>% 
           group_by(year, month) %>%
           summarise(distance = sum(distance), .groups = "drop") %>%
           complete(year, month = 1:12, fill = list(distance = 0)) %>%
           mutate(year = as.character(year)) %>% 
           filter(!(year == max(year) & month > max_month))
      
+     
      # Define query points for months (1:12) with finer resolution
-     query_points <- tibble(month = seq(1, 12, by = 0.01))
+     query_points <- seq(1, 12, by = 0.01)
      
      # Interpolate distance values for each year using PCHIP
      interpolated_data <- data %>%
           group_by(year) %>%
-          do({tibble(month = query_points$month,
-                     distance = pracma::pchip(.$month, .$distance, query_points$month)
-          )}) %>%
-          ungroup() %>% 
+          do(tibble(month = query_points,
+                    distance = pracma::pchip(.$month, .$distance, query_points))) %>%
+          ungroup() %>%
           filter(!(year == max(year) & month > max_month))
      
+     # Create plot
      p <- plot_ly()
-     
-     # Add interpolated lines for each year
-     for (i in unique(data$year)) {
+     for (i in years) {
           curve_data <- interpolated_data %>% filter(year == i)
           point_data <- data %>% filter(year == i)
-          color_index <- match(i, unique(data$year))  # Find the index of the year in unique_years
+          color_index <- match(i, years)
           
           p <- p %>%
                add_trace(
@@ -57,16 +57,15 @@ distance_per_year <- function(data, min_year = NULL, max_year = NULL) {
                     legendgroup = i
                )
      }
-
+     
      # Customize layout
      p <- p %>% 
-               layout(
-                    title = list(text = "<b>Distance per Year</b>", font = list(size = 20)),
-               xaxis = list(tickvals = 1:12, ticktext = month.abb, 
+          layout(
+               xaxis = list(tickvals = 1:12, ticktext = month.abb, fixedrange = TRUE,
                             tickfont  = list(size = 15), gridcolor = "lightgrey"),
                yaxis = list(title = list(text = "Distance (km)", font = list(size = 20)),
                             tickfont  = list(size = 15), gridcolor = "lightgrey",
-                            range = c(0, max(data$distance)+10)),
+                            fixedrange = TRUE, range = c(0, max(data$distance)+10)),
                legend = list(x = 1.05,
                              y = 0.5,
                              xanchor = "left", 
@@ -77,14 +76,158 @@ distance_per_year <- function(data, min_year = NULL, max_year = NULL) {
                showlegend = TRUE,
                margin = list(t = 50),
                hovermode = "x",
-               xaxis = list(fixedrange = TRUE), 
-               yaxis = list(fixedrange = TRUE),
                hoverlabel = list(font = list(size = 15))
           ) %>%
           config(displayModeBar = FALSE, showAxisDragHandles = FALSE,
-                 scrollZoom = FALSE, doubleClick = FALSE,
-                 editable = FALSE)
-
+                 scrollZoom = FALSE, doubleClick = FALSE, editable = FALSE)
+     
      return(p)
 }
+
+
+
+distance_over_week <- function(data, min_year = NULL, max_year = NULL) {
      
+     if (is.null(min_year)) min_year <- min(data$year)
+     if (is.null(max_year)) max_year <- max(data$year)
+     
+     max_week <- max(data %>% filter(year == max_year) %>% pull(week))
+     years <- seq(min_year, max_year)
+     colors <- paletteer::paletteer_d("ggthemes::Classic_Color_Blind", n = length(years))
+     
+     data <- data %>%
+          filter(year %in% years) %>% 
+          group_by(year, week) %>%
+          summarise(distance = sum(distance), .groups = "drop") %>%
+          group_by(year) %>%
+          mutate(distance = cumsum(distance)) %>%
+          ungroup() %>% 
+          complete(year, week = 1:53, fill = list(distance = NA)) %>% 
+          group_by(year) %>%
+          mutate(distance = ifelse(week == 1 & is.na(distance), 0, distance)) %>% 
+          fill(distance, .direction = "down") %>%
+          ungroup() %>% 
+          filter(!(year == max(year) & week > max_week))
+     
+     # Define query points for weeks (1:53) with finer resolution
+     query_points <- seq(1, 53, by = 0.01)
+     
+     # Interpolate distance values for each year using PCHIP
+     interpolated_data <- data %>%
+          group_by(year) %>%
+          do(tibble(week = query_points,
+                    distance = pracma::pchip(.$week, .$distance, query_points))) %>%
+          ungroup() %>% 
+          filter(!(year == max(year) & week > max_week))
+     
+     # Create plot
+     p <- plot_ly()
+     for (i in years) {
+          curve_data <- interpolated_data %>% filter(year == i)
+          point_data <- data %>% filter(year == i)
+          color_index <- match(i, years)
+          
+          p <- p %>%
+               add_trace(
+                    x = curve_data$week,
+                    y = curve_data$distance,
+                    name = i,
+                    type = 'scatter',
+                    mode = 'lines',
+                    line = list(shape = 'spline', color = colors[color_index], width = 3),
+                    hoverinfo = "none",
+                    legendgroup = i
+               ) %>% 
+               add_trace(
+                    x = point_data$week,
+                    y = point_data$distance,
+                    type = 'scatter',
+                    mode = 'markers',
+                    marker = list(size = 7, color = colors[color_index]),
+                    hoverinfo = 'text',
+                    text = paste(i, " - ", round(point_data$distance, digits = 1)),
+                    showlegend = FALSE,
+                    legendgroup = i
+               )
+     }
+     
+     # Customize layout
+     p <- p %>% 
+          layout(
+               xaxis = list(tickvals = 1:53, 
+                            ticktext = ifelse(seq(1, 53) %% 5 == 0, seq(1, 53), " "), 
+                            tickangle = 0,
+                            fixedrange = TRUE,
+                            tickfont  = list(size = 15), 
+                            gridcolor = "lightgrey"),
+               yaxis = list(title = list(text = "Distance (km)", font = list(size = 20)),
+                            tickfont  = list(size = 15), 
+                            fixedrange = TRUE, 
+                            range = c(0, max(data$distance)+100),
+                            gridcolor = "lightgrey"),
+               legend = list(x = 1.05,
+                             y = 0.5,
+                             xanchor = "left", 
+                             yanchor = "middle",
+                             font = list(size = 20)),
+               plot_bgcolor = "rgba(0,0,0,0)",
+               paper_bgcolor = "rgba(0,0,0,0)",
+               showlegend = TRUE,
+               margin = list(t = 50),
+               hovermode = "x",
+               hoverlabel = list(font = list(size = 15))
+          ) %>%
+          config(displayModeBar = FALSE, showAxisDragHandles = FALSE,
+                 scrollZoom = FALSE, doubleClick = FALSE, editable = FALSE)
+     
+     p
+     
+     return(p)
+}
+
+eddington_plot <- function(data) {
+     
+     data <- my_acts
+     dt <- data %>% 
+          group_by(start_date_local) %>%
+          summarize(distance = sum(distance), .groups = "drop")
+     
+     actual <- eddington::E_num(dt$distance)
+     
+     next_activities <- c()
+     for (i in 50:120) {
+          rest <- eddington::E_req(dt$distance, i)
+          df <- data.frame(km = i, rest = rest)
+          next_activities <- rbind(next_activities, df)
+     }
+     
+     p <- plot_ly(next_activities, x = ~km, y = ~rest, type = 'bar')
+     
+     p <- p %>% 
+          layout(
+               xaxis = list(title = "Distance (km)",
+                            tickvals = 50:120, 
+                            ticktext = ifelse(seq(50, 120) %% 5 == 0, seq(50, 120), " "), 
+                            tickangle = 0,
+                            fixedrange = TRUE,
+                            tickfont  = list(size = 15), 
+                            gridcolor = "lightgrey"),
+               yaxis = list(title = list(text = "Remaining activities", font = list(size = 20)),
+                            tickfont  = list(size = 15), 
+                            fixedrange = TRUE, 
+                            range = c(0, max(next_activities$rest)+5),
+                            gridcolor = "lightgrey"),
+               showlegend = FALSE,
+               plot_bgcolor = "rgba(0,0,0,0)",
+               paper_bgcolor = "rgba(0,0,0,0)",
+               margin = list(t = 50),
+               hovermode = "x",
+               hoverlabel = list(font = list(size = 15))
+          ) %>%
+          config(displayModeBar = FALSE, showAxisDragHandles = FALSE,
+                 scrollZoom = FALSE, doubleClick = FALSE, editable = FALSE)
+     
+     # Display the plot
+     p
+     
+}
