@@ -10,6 +10,8 @@ library(ggplot2)
 library(ggiraph)
 library(plotly)
 library(tidyr)
+library(lubridate)
+library(eddington)
 
 devtools::load_all()
 
@@ -26,9 +28,7 @@ ui <- dashboardPage(
      ),
      dashboardBody(
           tags$head(
-               tags$link(rel = "stylesheet", type = "text/css", href = "custom_valueBox.css"),
-               tags$style(HTML(".content-wrapper {overflow-y: auto; overflow-x: hidden;}"))
-          ),
+               tags$link(rel = "stylesheet", type = "text/css", href = "custom_valueBox.css")),
           fluidRow(
                valueBox(nrow(my_acts), "Activities", icon = icon("strava"), color = "blue"),
                valueBox(get_distance(), "Kms", icon = icon("globe"), color = "green"),
@@ -48,7 +48,24 @@ ui <- dashboardPage(
                tabItem(
                     align = "center",
                     tabName = "stats",
-                    plotlyOutput("plot_test", height = "400px", width = "90%"),
+                    fluidRow(box(title = tags$div("Distance per month", style = "font-size: 25px;"),
+                                 status = "primary",
+                                 width = 12,
+                                 collapsible = TRUE,
+                                 solidHeader = TRUE,
+                                 plotlyOutput("plot_month", height = "400px", width = "90%"))),
+                    fluidRow(box(title = tags$div("Distance over the weeks", style = "font-size: 25px;"),
+                                 width = 12,
+                                 collapsible = TRUE,
+                                 status = "primary",
+                                 solidHeader = TRUE,
+                                 plotlyOutput("plot_week", height = "400px", width = "90%"))),
+                    fluidRow(box(title = tags$div("Eddington number", style = "font-size: 25px;"),
+                                 width = 12,
+                                 collapsible = TRUE,
+                                 status = "primary",
+                                 solidHeader = TRUE,
+                                 plotlyOutput("eddington", height = "400px", width = "90%")))
                ),
                tabItem(
                     align = "center",
