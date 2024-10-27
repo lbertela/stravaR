@@ -29,7 +29,8 @@ load_activities <- function(token) {
           
           # separate date/time components into different columns
           mutate(year = year(start_date_time_local), 
-                 month = month(start_date_time_local), 
+                 month = month(start_date_time_local),
+                 week = week(start_date_time_local), 
                  day = day(start_date_time_local), 
                  hour = hour(start_date_time_local),
                  minute = minute(start_date_time_local),
@@ -47,7 +48,7 @@ load_activities <- function(token) {
           select(
                # activity & athlete info
                upload_id, name, sport_type, start_date_time_local, start_date_local,
-               year, month, day, hour, minute, second,
+               year, month, week, day, hour, minute, second,
                # activity stats
                distance, total_elevation_gain, elev_high, 
                average_speed, max_speed, 
