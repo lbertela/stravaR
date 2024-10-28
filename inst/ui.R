@@ -11,7 +11,6 @@ library(ggiraph)
 library(plotly)
 library(tidyr)
 library(lubridate)
-library(eddington)
 
 devtools::load_all()
 
