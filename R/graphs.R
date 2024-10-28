@@ -15,7 +15,6 @@ distance_per_month <- function(data, min_year = NULL, max_year = NULL) {
           mutate(year = as.character(year)) %>% 
           filter(!(year == max(year) & month > max_month))
      
-     
      # Define query points for months (1:12) with finer resolution
      query_points <- seq(1, 12, by = 0.01)
      
@@ -83,8 +82,6 @@ distance_per_month <- function(data, min_year = NULL, max_year = NULL) {
      
      return(p)
 }
-
-
 
 distance_over_week <- function(data, min_year = NULL, max_year = NULL) {
      
@@ -187,47 +184,67 @@ distance_over_week <- function(data, min_year = NULL, max_year = NULL) {
 
 eddington_plot <- function(data) {
      
-     data <- my_acts
      dt <- data %>% 
           group_by(start_date_local) %>%
-          summarize(distance = sum(distance), .groups = "drop")
+          summarize(distance = sum(distance), .groups = "drop") %>% 
+          arrange(distance) %>% 
+          pull(distance) %>% 
+          floor()
      
-     actual <- eddington::E_num(dt$distance)
+     actual <- eddington::E_num(dt)
      
-     next_activities <- c()
-     for (i in 50:120) {
-          rest <- eddington::E_req(dt$distance, i)
-          df <- data.frame(km = i, rest = rest)
-          next_activities <- rbind(next_activities, df)
-     }
+     done_activities <- data.frame(
+          km = 50:actual,
+          act = sapply(50:actual, function(x) (sum(dt_round >= x) - x) * (-1))
+     )
      
-     p <- plot_ly(next_activities, x = ~km, y = ~rest, type = 'bar')
+     next_activities <- purrr::map_dfr((actual+1):120, ~ data.frame(
+          km = .x,
+          act = E_req(dt_round, .x)
+     ))
+
+     edd <- bind_rows(done_activities, next_activities)
      
-     p <- p %>% 
+     # Define color gradients for values below and above zero
+     colors_below_zero <- colorRampPalette(c("darkgreen", "lightgreen"))(length(which(edd$act < 0)))
+     colors_above_zero <- colorRampPalette(c("lightcoral", "darkred"))(length(which(edd$act >= 0)))
+     edd$color <- c(colors_below_zero, colors_above_zero)
+     edd <- edd %>% 
+          mutate(text = ifelse(act < 0, NA, paste0(km, "km - ", act, " activities left")))
+     
+     # Create the plot with custom colors
+     p <- plot_ly(edd, x = ~km, y = ~act, 
+                  type = 'bar', 
+                  marker = list(color = ~color),
+                  hoverinfo = "text",
+                  text = ~text,
+                  textposition = 'none') %>% 
           layout(
-               xaxis = list(title = "Distance (km)",
-                            tickvals = 50:120, 
-                            ticktext = ifelse(seq(50, 120) %% 5 == 0, seq(50, 120), " "), 
-                            tickangle = 0,
-                            fixedrange = TRUE,
-                            tickfont  = list(size = 15), 
-                            gridcolor = "lightgrey"),
-               yaxis = list(title = list(text = "Remaining activities", font = list(size = 20)),
-                            tickfont  = list(size = 15), 
-                            fixedrange = TRUE, 
-                            range = c(0, max(next_activities$rest)+5),
-                            gridcolor = "lightgrey"),
+               xaxis = list(
+                    title = list(text = "Distance (km)", font = list(size = 20)),
+                    tickvals = 50:120, 
+                    ticktext = ifelse(seq(50, 120) %% 5 == 0, seq(50, 120), " "), 
+                    tickangle = 0,
+                    fixedrange = TRUE,
+                    tickfont  = list(size = 15), 
+                    gridcolor = "lightgrey"
+               ),
+               yaxis = list(
+                    title = list(text = "Activities", font = list(size = 20)),
+                    tickfont  = list(size = 15), 
+                    fixedrange = TRUE, 
+                    range = c(min(edd$act)-5, max(edd$act)+5),
+                    gridcolor = "lightgrey"
+               ),
                showlegend = FALSE,
                plot_bgcolor = "rgba(0,0,0,0)",
                paper_bgcolor = "rgba(0,0,0,0)",
                margin = list(t = 50),
-               hovermode = "x",
                hoverlabel = list(font = list(size = 15))
           ) %>%
-          config(displayModeBar = FALSE, showAxisDragHandles = FALSE,
+          config(displayModeBar = FALSE, showAxisDragHandles = FALSE, 
                  scrollZoom = FALSE, doubleClick = FALSE, editable = FALSE)
-     
-     # Display the plot
-     p
+
+     return(p)
      
 }
