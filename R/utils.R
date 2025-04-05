@@ -24,17 +24,17 @@ load_activities <- function(token) {
      my_acts <- rStrava::compile_activities(activities) %>% 
           
           # convert start_date_local to Date object
-          mutate(start_date_time_local = as_datetime(x = start_date_local),
-                 start_date_local = as_date(x = start_date_local)) %>% 
+          mutate(start_date_time_local = lubridate::as_datetime(x = start_date_local),
+                 start_date_local = lubridate::as_date(x = start_date_local)) %>% 
           
           # separate date/time components into different columns
-          mutate(year = year(start_date_time_local), 
-                 month = month(start_date_time_local),
-                 week = week(start_date_time_local), 
-                 day = day(start_date_time_local), 
-                 hour = hour(start_date_time_local),
-                 minute = minute(start_date_time_local),
-                 second = second(start_date_time_local)) %>% 
+          mutate(year = lubridate::year(start_date_time_local), 
+                 month = lubridate::month(start_date_time_local),
+                 week = lubridate::week(start_date_time_local), 
+                 day = lubridate::day(start_date_time_local), 
+                 hour = lubridate::hour(start_date_time_local),
+                 minute = lubridate::minute(start_date_time_local),
+                 second = lubridate::second(start_date_time_local)) %>% 
           
           # rename sports
           mutate(sport_type = case_when(
