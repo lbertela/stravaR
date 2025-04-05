@@ -105,3 +105,16 @@ get_wdays_freq <- function(years = NULL) {
      return(wdays)
      
 }
+
+get_last_week_in_year <- function(year) {
+     
+     last_week <- tibble(dates = seq(as.Date(paste0(year, "-01-01")), 
+                                     as.Date(paste0(year, "-12-31")), 
+                                     by = "days")) %>%
+          mutate(week = as.integer(format(dates, "%W")) + 1) %>%
+          summarise(last_week = max(week, na.rm = TRUE)) %>%
+          pull(last_week)
+
+     return(last_week)
+     
+}
