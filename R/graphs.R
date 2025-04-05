@@ -195,23 +195,22 @@ eddington_plot <- function(data) {
      
      done_activities <- data.frame(
           km = 50:actual,
-          act = sapply(50:actual, function(x) (sum(dt_round >= x) - x) * (-1))
+          act = sapply(50:actual, function(x) (sum(dt >= x) - x) * (-1))
      )
      
      next_activities <- purrr::map_dfr((actual+1):120, ~ data.frame(
           km = .x,
-          act = E_req(dt_round, .x)
+          act = eddington::E_req(dt, .x)
      ))
 
-     edd <- bind_rows(done_activities, next_activities)
+     edd <- bind_rows(done_activities, next_activities) %>% 
+          mutate(text = ifelse(act < 0, NA, paste0(km, "km - ", act, " activities left")))
      
      # Define color gradients for values below and above zero
      colors_below_zero <- colorRampPalette(c("darkgreen", "lightgreen"))(length(which(edd$act < 0)))
      colors_above_zero <- colorRampPalette(c("lightcoral", "darkred"))(length(which(edd$act >= 0)))
      edd$color <- c(colors_below_zero, colors_above_zero)
-     edd <- edd %>% 
-          mutate(text = ifelse(act < 0, NA, paste0(km, "km - ", act, " activities left")))
-     
+
      # Create the plot with custom colors
      p <- plot_ly(edd, x = ~km, y = ~act, 
                   type = 'bar', 
@@ -246,5 +245,32 @@ eddington_plot <- function(data) {
                  scrollZoom = FALSE, doubleClick = FALSE, editable = FALSE)
 
      return(p)
+     
+}
+
+
+
+
+
+
+
+week_plot <- function(data) {
+     
+     max_weeks_per_year <- my_acts %>%
+          distinct(year) %>%
+          rowwise() %>%
+          mutate(max_week = get_last_week_in_year(year)) %>%
+          ungroup() %>%
+          rowwise() %>%
+          do(tibble(year = .$year, week = 1:.$max_week)) %>%
+          ungroup()
+     
+     dt <- my_acts %>%
+          group_by(year, week) %>%
+          summarize(distance = sum(distance), .groups = "drop") %>%
+          right_join(all_year_weeks, by = c("year", "week")) %>%
+          mutate(distance = replace_na(distance, 0)) %>% 
+          arrange(year, week)
+
      
 }
